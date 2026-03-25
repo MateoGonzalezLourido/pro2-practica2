@@ -1,0 +1,26 @@
+# Carpeta de build de CMake
+build/
+cmake-build-*/
+
+# Archivos compilados
+*.o
+*.a
+*.so
+*.out
+
+# Ejecutables (sin extensión en Linux)
+# Añade aquí el nombre de tu ejecutable si quieres
+# mi_programa
+
+# CMake generados
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# VS Code
+.vscode/
+
+# Clangd
+.cache/
