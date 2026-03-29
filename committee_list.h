@@ -21,13 +21,13 @@ typedef struct {
   tListP projectList;
 } tItemC;
 
-struct Lista {
+typedef struct {
   tItemC data[MAX_COMITES];
   int last;
-};
+} Lista;
 
 typedef int tPosC;
-typedef tPosC tListC;
+typedef Lista tListC;
 
 // funciones
 
