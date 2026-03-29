@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #define NAME_LENGTH_LIMIT 25
 #include <stdbool.h>
 
@@ -6,5 +9,4 @@ typedef char tProjectName[NAME_LENGTH_LIMIT];
 typedef int tNumVotes;
 typedef bool tProjectEco;
 
-
-
+#endif
