@@ -1,5 +1,5 @@
 /*
-* TITLE: PROGRAMMING II LABS
+ * TITLE: PROGRAMMING II LABS
  * SUBTITLE: Practical 2
  * AUTHOR 1: ***************************** LOGIN 1: **********
  * AUTHOR 2: ***************************** LOGIN 2: **********
@@ -8,8 +8,118 @@
  */
 
 #include "project_list.h"
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
-/* Write your code here... */
+void createEmptyList(tListP *L) {
+  // precd: ya esta inicializada
+  *L = NULLP; // asi se define que esta vacia
+}
+
+bool isEmptyList(const tListP L) { return L == NULLP; }
+
+tPosP first(const tListP L) {
+  return L; // por normas del TAD,tListP L ya representa el puntero al nodo1, y
+            // cumple el TAD
+}
+
+tPosP last(tListP L) {
+  tPosP p = L;                             // cd TAD
+  while (p != NULLP && p->next != NULLP) { // buscar desde el primer nodo hasta
+                                           // que sea null (ultimo nodo +1)
+    p = p->next;
+  }
+  return p; // p apunta al ultimo nodo de la lista
+}
+tPosP next(tPosP p, const tListP L) {
+  (void)L; // L no hace falta
+  if (p == NULLP)
+    return NULLP; // el rango es valido, pero podria ser una lista vacia
+  return p->next;
+}
+
+tPosP previous(const tPosP p, const tListP L) {
+  if (p == NULLP || L == NULLP || L == p)
+    return NULLP;
+
+  tPosP q = L;                               // nodo anterior
+  while (q->next != NULLP && q->next != p) { // desde el inicio hasta nodo dado
+    q = q->next;                             // recorremos los nodos
+  }
+  return (q->next == p)
+             ? q
+             : NULLP; // esto es por si no encontramos p al recorrer nodos (por
+                      // eso devolvemos NULLP , porque fallo)
+}
+
+bool insertItem(const tItemP data, tListP *L) {
+  tPosP newNode = malloc(sizeof(*newNode));
+  if (newNode == NULL)
+    return false; // falló el malloc
+
+  // dar datos
+  newNode->data = data;
+  newNode->next = NULLP;
+
+  // añadir al final
+  tPosP ultimo = last(*L);
+  ultimo->next = newNode;
+  return true;
+
+  // enlazar nuevo nodo
+  tPosP prev=previous(ultimo, *L);
+  newNode->next = prev->next; // puede ser null
+  prev->next = newNode;
+
+  return true;
+}
+tItemP getItem(tPosP pos, tListP L) {
+  (void)L;
+  return pos->data;
+}
+
+tListP updateItem(const tItemP newData, tPosP pos, tListP *L) {
+  // lista vacia (si L es null, pos puede ser null, sienmdo posición válida
+  // aunque sea Null)
+  if (pos != NULLP)
+    pos->data = newData; // actualizar el contenido del nodo
+  return *L;             // la lista no cambia de orden ni de estructura
+}
+
+tPosP findItem(tProjectName data, const tListP L) {
+  tPosP p = L; // empezamos en el priemr nodo
+
+  while (p != NULLP) {
+    if (strcmp(p->data.projectName, data) == 0) { // coincidencia
+      return p;
+    }
+    p = p->next; // siguiente nodo
+  }
+  return NULLP; // no se encotro nodo
+}
+tListP deleteAtPosition(tPosP pos, tListP *L) {
+  if (*L == NULLP || pos == NULLP) { // lista vacia
+    return *L;
+  }
+  // si se borra el primer nodo
+  if (pos == *L) {
+    tListP newHead = (*L)->next;
+    free(*L);
+    *L = newHead;
+    return newHead;
+  }
+  // buscar nodo anterior
+  tPosP prev = *L;
+  while (prev->next != NULLP && prev->next != pos) {
+    prev = prev->next;
+  }
+
+  // si encontramos el nodo
+  if (prev->next == pos) {
+    prev->next = pos->next;
+    free(pos);
+  }
+  return *L;
+}
