@@ -39,6 +39,7 @@ tPosC next(const tPosC indice, const tListC L) {
   return (tPosC)indice + 1;
 }
 tPosC previous(const tPosC indice, const tListC L) {
+    (void)L;
   if (indice <= 0)
     return NULLC; // estaria fuera de rango
   return (tPosC)indice - 1;

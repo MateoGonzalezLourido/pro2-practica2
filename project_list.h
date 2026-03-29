@@ -63,9 +63,8 @@ tPosP previousP(tPosP p, tListP L);        /* devolver anterior nodo ocupado;
        precondicion:nodo recibido valido
        postcondicion: no hay
        */
-bool insertItemPP(tItemP item, tListP *L); /* añadir elemento a la lista
- recibe de entradas la p.memoria de la lista y el nodo donde añadiremos el nuevo
- item, y el item que añadiremos salida: true/false segun saliese bien o no
+bool insertItemP(tItemP item, tListP *L); /* añadir elemento a la lista
+ recibe de entradas la p.memoria de la lista y el item que añadiremos salida: true/false segun saliese bien o no
  precondicion:nodo donde insertar recibido valido
  postcondicion: Las posiciones de los elementos de la lista posteriores a la del
  elemento insertado pueden haber variado
