@@ -13,19 +13,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-void createEmptyList(tListP *L) {
+void createEmptyListP(tListP *L) {
   // precd: ya esta inicializada
   *L = NULLP; // asi se define que esta vacia
 }
 
-bool isEmptyList(const tListP L) { return L == NULLP; }
+bool isEmptyListP(const tListP L) { return L == NULLP; }
 
-tPosP first(const tListP L) {
+tPosP firstP(const tListP L) {
   return L; // por normas del TAD,tListP L ya representa el puntero al nodo1, y
             // cumple el TAD
 }
 
-tPosP last(tListP L) {
+tPosP lastP(tListP L) {
   tPosP p = L;                             // cd TAD
   while (p != NULLP && p->next != NULLP) { // buscar desde el primer nodo hasta
                                            // que sea null (ultimo nodo +1)
@@ -33,14 +33,14 @@ tPosP last(tListP L) {
   }
   return p; // p apunta al ultimo nodo de la lista
 }
-tPosP next(tPosP p, const tListP L) {
+tPosP nextP(tPosP p, const tListP L) {
   (void)L; // L no hace falta
   if (p == NULLP)
     return NULLP; // el rango es valido, pero podria ser una lista vacia
   return p->next;
 }
 
-tPosP previous(const tPosP p, const tListP L) {
+tPosP previousP(const tPosP p, const tListP L) {
   if (p == NULLP || L == NULLP || L == p)
     return NULLP;
 
@@ -54,7 +54,7 @@ tPosP previous(const tPosP p, const tListP L) {
                       // eso devolvemos NULLP , porque fallo)
 }
 
-bool insertItem(const tItemP data, tListP *L) {
+bool insertItemP(const tItemP data, tListP *L) {
   tPosP newNode = malloc(sizeof(*newNode));
   if (newNode == NULL)
     return false; // falló el malloc
@@ -64,23 +64,23 @@ bool insertItem(const tItemP data, tListP *L) {
   newNode->next = NULLP;
 
   // añadir al final
-  tPosP ultimo = last(*L);
+  tPosP ultimo = lastP(*L);
   ultimo->next = newNode;
   return true;
 
   // enlazar nuevo nodo
-  tPosP prev=previous(ultimo, *L);
+  tPosP prev = previousP(ultimo, *L);
   newNode->next = prev->next; // puede ser null
   prev->next = newNode;
 
   return true;
 }
-tItemP getItem(tPosP pos, tListP L) {
+tItemP getItemP(tPosP pos, tListP L) {
   (void)L;
   return pos->data;
 }
 
-tListP updateItem(const tItemP newData, tPosP pos, tListP *L) {
+tListP updateItemP(const tItemP newData, tPosP pos, tListP *L) {
   // lista vacia (si L es null, pos puede ser null, sienmdo posición válida
   // aunque sea Null)
   if (pos != NULLP)
@@ -88,7 +88,7 @@ tListP updateItem(const tItemP newData, tPosP pos, tListP *L) {
   return *L;             // la lista no cambia de orden ni de estructura
 }
 
-tPosP findItem(tProjectName data, const tListP L) {
+tPosP findItemP(tProjectName data, const tListP L) {
   tPosP p = L; // empezamos en el priemr nodo
 
   while (p != NULLP) {
@@ -99,7 +99,7 @@ tPosP findItem(tProjectName data, const tListP L) {
   }
   return NULLP; // no se encotro nodo
 }
-tListP deleteAtPosition(tPosP pos, tListP *L) {
+tListP deleteAtPositionP(tPosP pos, tListP *L) {
   if (*L == NULLP || pos == NULLP) { // lista vacia
     return *L;
   }
