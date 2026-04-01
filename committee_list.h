@@ -47,8 +47,8 @@ bool insertItemC(tItemC data, tPosC indice,
                  tListC *L); // añadir elemento;recibe info insertar, indice
                              // donde se cambia, lista usar
 void deleteAtPositionC(tPosC indice,
-                       tListC *L); // borrar proyecto; recibe indice donde
-                                   // borrar y la lista donde borrar
+                       tListC *L);       // borrar proyecto; recibe indice donde
+                                         // borrar y la lista donde borrar
 tItemC getItemC(tPosC indice, tListC L); // recuperar info proyecto
 void updateItemC(tItemC data, tPosC indice,
                  tListC *L); // modificar lista; recibe cambiar, indice lista
