@@ -43,7 +43,7 @@ tProyectoInfo Obtener_Indice_Lista_Proyecto(tListC *lista, char *comitteeName,
 */
 void Create(tListC *lista, char *comitteeName, char *totalEvaluators) {
   if (findItemC(comitteeName, *lista) != NULLC) {
-    printf("+ Error: New not possible\n");
+    printf("+ Error: Create not possible\n");
     return;
   }
 
@@ -56,7 +56,8 @@ void Create(tListC *lista, char *comitteeName, char *totalEvaluators) {
   item.nullVotes = 0;
   createEmptyListP(&item.projectList);
   insertItemC(item, lastC(*lista) + 1, lista);
-  printf();
+  printf("* Create: committee %s totalevaluators %d\n", item.committeeName,
+         item.totalEvaluators);
 }
 
 /*
@@ -67,7 +68,7 @@ void New(tListC *lista, char *comitteeName, char *projectName, char *category) {
   const tProyectoInfo resultado =
       Obtener_Indice_Lista_Proyecto(lista, comitteeName, projectName);
   if (resultado.InfoComite == NULLC || resultado.InfoProyecto == NULLP) {
-    printf("+ Error: Committee not found\n");
+    printf("+ Error: New not possible\n");
     return;
   }
 
@@ -83,8 +84,8 @@ void New(tListC *lista, char *comitteeName, char *projectName, char *category) {
     return;
   }
 
-  printf("* New: project %s category %s\n", projectName,
-         item.projectEco ? "eco" : "non-eco");
+  printf("* New: committee %s project %s category %s\n", comitteeName,
+         projectName, item.projectEco ? "eco" : "non-eco");
 }
 /*
     funcion:votar un proyecto
@@ -94,11 +95,12 @@ void vote(tListC *lista, char *comitteeName, char *projectName) {
   const tProyectoInfo resultado =
       Obtener_Indice_Lista_Proyecto(lista, comitteeName, projectName);
   if (resultado.InfoComite == NULLC) {
-    printf("+ Error: Committee not found\n");
+    printf("+ Error: Vote not possible\n");
     return;
   }
   if (resultado.InfoProyecto == NULLP) {
-    printf("+ Error: Project not found\n");
+    printf("+ Error: Vote not possible. Project %s not found in committee %s\n",
+           projectName, comitteeName);
     lista->data[resultado.InfoComite].nullVotes++;
     return;
   }
@@ -109,39 +111,64 @@ void vote(tListC *lista, char *comitteeName, char *projectName) {
   updateItemP(resultado.InfoProyecto->data, resultado.InfoProyecto,
               &lista->data[resultado.InfoComite].projectList);
 
-  printf();
+  printf("* Vote: committee %s project %s category %s numvotes %d\n",
+         comitteeName, projectName,
+         (resultado.InfoProyecto->data.projectEco) ? "eco" : "non-eco",
+         resultado.InfoProyecto->data.numVotes);
 }
 /*
     funcion:descalificar/borrar un proyecto
     parametros:lista comites,nombre comite,nombre del proyecto
 */
-void Disqualify(tListC *lista, char *comitteeName, char *projectName) {
-  const tProyectoInfo resultado =
-      Obtener_Indice_Lista_Proyecto(lista, comitteeName, projectName);
-  if (resultado.InfoComite == NULLC || resultado.InfoProyecto == NULLP) {
-    printf("+ Error: Committee not found\n");
+void Disqualify(tListC *lista, char *projectName) {
+  if (isEmptyListC(*lista)) {
+    printf("+ Error: Disqualify not possible\n");
     return;
   }
+  for (int i = 0; i <= lastC(*lista); i++) {
+    tProyectoInfo resultado = Obtener_Indice_Lista_Proyecto(
+        lista, lista->data[i].committeeName, projectName);
+    if (resultado.InfoProyecto != NULLP)
+      break;
 
-  lista->data[resultado.InfoComite].validVotes -=
-      resultado.InfoProyecto->data.numVotes;
-  lista->data[resultado.InfoComite].nullVotes +=
-      resultado.InfoProyecto->data.numVotes;
-  deleteAtPositionP(
-      resultado.InfoProyecto,
-      &lista->data[resultado.InfoComite]
-           .projectList); // deleteAtPositionP ya actualiza la lista, no hace
-                          // falta actualizarla después
+    if (resultado.InfoComite == NULLC || resultado.InfoProyecto == NULLP) {
+      printf("Committee %s \nNo project \n%s disqualified\n",
+             lista->data[resultado.InfoComite].committeeName, projectName);
+      return;
+    }
 
-  printf();
+    lista->data[resultado.InfoComite].validVotes -=
+        resultado.InfoProyecto->data.numVotes;
+    lista->data[resultado.InfoComite].nullVotes +=
+        resultado.InfoProyecto->data.numVotes;
+    deleteAtPositionP(
+        resultado.InfoProyecto,
+        &lista->data[resultado.InfoComite]
+             .projectList); // deleteAtPositionP ya actualiza la lista, no hace
+                            // falta actualizarla después
+
+    printf("Committee %s \nproject %s disqualified\n",
+           lista->data[resultado.InfoComite].committeeName, projectName);
+  }
 }
 
 void Remove(tListC *lista) {
+  if (isEmptyListC(*lista)) {
+    printf("+ Error: Remove not possible\n");
+    return;
+  }
   const tPosC comites = lastC(*lista);
+  bool removed = false;
   for (int i = 0; i <= comites; i++) {
     if (lista->data[i].validVotes == 0) {
       deleteAtPositionC(i, lista);
+      printf("* Remove: committee %s\n", lista->data[i].committeeName);
+      removed = true;
+
     }
+  }
+  if(!removed) {
+    printf("+ Error: Remove not possible\n");
   }
 }
 
@@ -154,35 +181,38 @@ void processCommand(char *commandNumber, char command, char *param1,
 
   switch (command) {
   case 'C':
-    printf();
+    printf("%s %c: committee/project %s totalevaluators %s\n", commandNumber,
+           command, param1, param2);
     Create(listCommittees, param1, param2);
     break;
   case 'N':
-    printf();
+    printf("%s %c: committee/project %s totalevaluators %s category %s\n",
+           commandNumber, command, param1, param2, param3);
     New(listCommittees, param1, param2, param3);
     break;
   case 'S':
-    printf();
-    Stats();
+    printf("%s %c\n", commandNumber, command);
+    Stats(); // TODO
     break;
   case 'V':
-    printf();
+    printf("%s %c: committee/project %s totalevaluators %s\n", commandNumber,
+           command, param1, param2);
     vote(listCommittees, param1, param2);
     break;
   case 'D':
-    printf();
-    Disqualify(listCommittees, param1, param2);
+    printf("%s %c: committee/project %s\n", commandNumber, command, param1);
+    Disqualify(listCommittees, param1);
     break;
   case 'R':
-    printf();
+    printf("%s %c\n", commandNumber, command);
     Remove(listCommittees);
     break;
   case 'W':
-    printf();
-    Winners();
+    printf("%s %c\n", commandNumber, command);
+    Winners(); // TODO
     break;
   default:
-    printf();
+    printf("%s %c\n", commandNumber, command);
     break;
   }
 }
