@@ -63,7 +63,7 @@ void Create(tListC *lista, char *comitteeName, char *totalEvaluators) {
   item.nullVotes = 0;
   createEmptyListP(&item.projectList);
   insertItemC(item, lista);
-  printf("* Create: committee %s totalevaluators %d\n", item.committeeName,
+  printf("* Create: committee %s totalEvaluators %d\n", item.committeeName,
          item.totalEvaluators);
 }
 
@@ -190,14 +190,14 @@ void Stats(tListC *lista) {
 
   for (int i = 0; i <= lastC(*lista); i++) {
     tItemC comite = lista->data[i];
-    printf("%sCommittee %s \n", (i == 0) ? "" : "\n", comite.committeeName);
+    printf("Committee %s\n",comite.committeeName);
     if (isEmptyListP(comite.projectList)) {
-      printf("No projects\n Nullvotes %d\nParticipation: %d votes from %d "
-             "evaluators (%.2f%%)\n",
+      printf("No projects\nNullvotes %d\nParticipation: %d votes from %d "
+             "evaluators (%.2f%%)\n\n",
              comite.nullVotes, comite.validVotes, comite.totalEvaluators,
              (comite.totalEvaluators > 0)
                  ? (comite.validVotes * 100.0 / comite.totalEvaluators)
-                 : 0);
+                 : 0.0);
       continue;
     }
     tPosP proyecto = firstP(comite.projectList);
@@ -277,26 +277,26 @@ void processCommand(char *commandNumber, char command, char *param1,
 
   switch (command) {
   case 'C':
-    printf("%s %c: committee/project %s totalevaluators %s\n", commandNumber,
+    printf("%s %c: committee %s totalevaluators %s\n", commandNumber,
            command, param1, param2);
     Create(listCommittees, param1, param2);
     break;
   case 'N':
-    printf("%s %c: committee/project %s totalevaluators %s category %s\n",
+    printf("%s %c: committee %s project %s category %s\n",
            commandNumber, command, param1, param2, param3);
     New(listCommittees, param1, param2, param3);
     break;
   case 'S':
-    printf("%s %c\n", commandNumber, command);
+    printf("%s %c:\n", commandNumber, command);
     Stats(listCommittees);
     break;
   case 'V':
-    printf("%s %c: committee/project %s totalevaluators %s\n", commandNumber,
+    printf("%s %c: committee %s totalevaluators %s\n", commandNumber,
            command, param1, param2);
     vote(listCommittees, param1, param2);
     break;
   case 'D':
-    printf("%s %c: committee/project %s\n", commandNumber, command, param1);
+    printf("%s %c: committee %s\n", commandNumber, command, param1);
     Disqualify(listCommittees, param1);
     break;
   case 'R':
@@ -308,7 +308,7 @@ void processCommand(char *commandNumber, char command, char *param1,
     Winners(listCommittees);
     break;
   default:
-    printf("%s %c\n", commandNumber, command);
+    printf("%s %c:\n", commandNumber, command);
     break;
   }
 }
