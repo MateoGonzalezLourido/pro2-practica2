@@ -72,9 +72,9 @@ funcion:añadir un proyecto nuevo a un comite
 parametros:el nombre del proyecto, categoria eco, la lista donde añadir
 */
 void New(tListC *lista, char *comitteeName, char *projectName, char *category) {
-  const tProyectoInfo resultado =
+  tProyectoInfo resultado =
       Obtener_Indice_Lista_Proyecto(lista, comitteeName, projectName);
-  if (resultado.InfoComite == NULLC || resultado.InfoProyecto == NULLP) {
+  if (resultado.InfoComite == NULLC || resultado.InfoProyecto != NULLP) {
     printf("+ Error: New not possible\n");
     return;
   }
@@ -190,7 +190,7 @@ void Stats(tListC *lista) {
 
   for (int i = 0; i <= lastC(*lista); i++) {
     tItemC comite = lista->data[i];
-    printf("Committee %s\n",comite.committeeName);
+    printf("Committee %s\n", comite.committeeName);
     if (isEmptyListP(comite.projectList)) {
       printf("No projects\nNullvotes %d\nParticipation: %d votes from %d "
              "evaluators (%.2f%%)\n\n",
@@ -201,20 +201,21 @@ void Stats(tListC *lista) {
       continue;
     }
     tPosP proyecto = firstP(comite.projectList);
-    tPosP ultimo = lastP(comite.projectList);
-    do {
-      printf("Project %s category %s numvotes %d (%d%%)\n",
+    while (proyecto != NULLP) {
+      printf("Project %s category %s numvotes %d (%.2f%%)\n",
              proyecto->data.projectName,
-             (proyecto->data.projectEco) ? "eco" : "non-eco",
+             proyecto->data.projectEco ? "eco" : "non-eco",
              proyecto->data.numVotes,
              (comite.validVotes > 0)
-                 ? (proyecto->data.numVotes * 100 / comite.validVotes)
-                 : 0);
-
-      if (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0)
-        proyecto = nextP(proyecto, comite.projectList);
-
-    } while (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0);
+                 ? (proyecto->data.numVotes * 100.0 / comite.validVotes)
+                 : 0.0);
+      proyecto = nextP(proyecto, comite.projectList);
+    }
+    printf("Nullvotes %d\nParticipation: %d votes from %d voters (%.2f%%)\n\n",
+           comite.nullVotes, comite.validVotes, comite.totalEvaluators,
+           (comite.totalEvaluators > 0)
+               ? (comite.validVotes * 100.0 / comite.totalEvaluators)
+               : 0.0);
   }
 }
 /*
@@ -251,10 +252,10 @@ void Winners(tListC *lista) {
         }
       }
 
-      if (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0)
+      if (strcmp(proyecto->data.projectName, ultimo->data.projectName) != 0)
         proyecto = nextP(proyecto, comite.projectList);
 
-    } while (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0);
+    } while (strcmp(proyecto->data.projectName, ultimo->data.projectName) != 0);
 
     // por si fallase algo
     if (proyecto == NULLP || ganadorEco == NULLP || ganadorNonEco == NULLP) {
@@ -277,13 +278,13 @@ void processCommand(char *commandNumber, char command, char *param1,
 
   switch (command) {
   case 'C':
-    printf("%s %c: committee %s totalevaluators %s\n", commandNumber,
-           command, param1, param2);
+    printf("%s %c: committee %s totalevaluators %s\n", commandNumber, command,
+           param1, param2);
     Create(listCommittees, param1, param2);
     break;
   case 'N':
-    printf("%s %c: committee %s project %s category %s\n",
-           commandNumber, command, param1, param2, param3);
+    printf("%s %c: committee %s project %s category %s\n", commandNumber,
+           command, param1, param2, param3);
     New(listCommittees, param1, param2, param3);
     break;
   case 'S':
@@ -291,8 +292,8 @@ void processCommand(char *commandNumber, char command, char *param1,
     Stats(listCommittees);
     break;
   case 'V':
-    printf("%s %c: committee %s totalevaluators %s\n", commandNumber,
-           command, param1, param2);
+    printf("%s %c: committee %s totalevaluators %s\n", commandNumber, command,
+           param1, param2);
     vote(listCommittees, param1, param2);
     break;
   case 'D':
