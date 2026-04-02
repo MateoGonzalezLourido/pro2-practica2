@@ -219,7 +219,59 @@ void Stats(tListC *lista) {
     } while (!strcmp(proyecto->data.projectName, ultimo->data.projectName));
   }
 }
-void Winners() {}
+/*
+funcion:mostrar proyecto ganador de cada comite de categoria eco y no eco
+parametros:lista de comites
+*/
+void Winners(tListC *lista) {
+  if (isEmptyListC(*lista)) {
+    printf("+ Error: Winners not possible\n");
+    return;
+  }
+  for (int i = 0; i <= lastC(*lista); i++) {
+    tItemC comite = lista->data[i];
+    if (isEmptyListP(comite.projectList) || comite.validVotes == 0) {
+      printf("%sCommittee %s \n", (i == 0) ? "" : "\n", comite.committeeName);
+      printf("Category eco: No winner\n");
+      printf("Category non-eco: No winner\n");
+      continue;
+    }
+    tPosP proyecto = firstP(comite.projectList);
+    tPosP ultimo = lastP(comite.projectList);
+    tPosP ganadorEco = NULL;
+    tPosP ganadorNonEco = NULL;
+    do {
+      if (proyecto->data.projectEco) {
+        if (ganadorEco == NULL ||
+            proyecto->data.numVotes > ganadorEco->data.numVotes) {
+          ganadorEco = proyecto;
+        }
+      } else {
+        if (ganadorNonEco == NULL ||
+            proyecto->data.numVotes > ganadorNonEco->data.numVotes) {
+          ganadorNonEco = proyecto;
+        }
+      }
+
+      if (!strcmp(proyecto->data.projectName, ultimo->data.projectName))
+        proyecto = nextP(proyecto, comite.projectList);
+
+    } while (!strcmp(proyecto->data.projectName, ultimo->data.projectName));
+
+    // por si fallase algo
+    if (proyecto == NULLP || ganadorEco == NULLP || ganadorNonEco == NULLP) {
+      printf("+ Error: Winners not possible\n");
+      continue;
+    }
+
+    printf("%sCommittee %s \n", (i == 0) ? "" : "\n", comite.committeeName);
+    printf("Category eco: Project %s numvotes %d\n",
+           ganadorEco->data.projectName, ganadorEco->data.numVotes);
+    printf("Category non-eco: Project %s numvotes %d\n",
+           ganadorNonEco ? ganadorNonEco->data.projectName : "No winner",
+           ganadorNonEco ? ganadorNonEco->data.numVotes : 0);
+  }
+}
 
 void processCommand(char *commandNumber, char command, char *param1,
                     char *param2, char *param3, tListC *listCommittees) {
@@ -255,7 +307,7 @@ void processCommand(char *commandNumber, char command, char *param1,
     break;
   case 'W':
     printf("%s %c\n", commandNumber, command);
-    Winners(); // TODO
+    Winners(listCommittees);
     break;
   default:
     printf("%s %c\n", commandNumber, command);
