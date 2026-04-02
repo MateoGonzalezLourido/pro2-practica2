@@ -48,7 +48,6 @@ tProyectoInfo Obtener_Indice_Lista_Proyecto(tListC *lista, char *comitteeName,
     parametros:el nombre del comite, total evaluadores, la lista donde añadir
 */
 void Create(tListC *lista, char *comitteeName, char *totalEvaluators) {
-  // TODO: REVISAR SI NECESITA PRECONDICION DE LISTA NO VACIA,
 
   if (findItemC(comitteeName, *lista) != NULLC) {
     printf("+ Error: Create not possible\n");
