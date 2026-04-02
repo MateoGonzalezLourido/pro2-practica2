@@ -25,11 +25,18 @@ typedef struct {
 tProyectoInfo Obtener_Indice_Lista_Proyecto(tListC *lista, char *comitteeName,
                                             char *projectName) {
   tProyectoInfo resultado;
+
+  if (isEmptyListC(*lista)) {
+    resultado.InfoComite = NULLC;
+    resultado.InfoProyecto = NULLP;
+    return resultado;
+  }
   resultado.InfoComite = findItemC(comitteeName, *lista);
   if (resultado.InfoComite == NULLC) {
     resultado.InfoProyecto = NULLP;
     return resultado;
   }
+  // TODO: REVISAR SI NECESITA PRECONDICION DE LISTA NO VACIA,
 
   resultado.InfoProyecto =
       findItemP(projectName, lista->data[resultado.InfoComite].projectList);
@@ -42,6 +49,8 @@ tProyectoInfo Obtener_Indice_Lista_Proyecto(tListC *lista, char *comitteeName,
     parametros:el nombre del comite, total evaluadores, la lista donde añadir
 */
 void Create(tListC *lista, char *comitteeName, char *totalEvaluators) {
+  // TODO: REVISAR SI NECESITA PRECONDICION DE LISTA NO VACIA,
+
   if (findItemC(comitteeName, *lista) != NULLC) {
     printf("+ Error: Create not possible\n");
     return;
@@ -132,7 +141,8 @@ void Disqualify(tListC *lista, char *projectName) {
       break;
 
     if (resultado.InfoComite == NULLC || resultado.InfoProyecto == NULLP) {
-      printf("Committee %s \nNo project \n%s disqualified\n",
+      printf("%sCommittee %s \nNo project \n%s disqualified\n",
+             (i == 0) ? "" : "\n",
              lista->data[resultado.InfoComite].committeeName, projectName);
       return;
     }
@@ -147,7 +157,7 @@ void Disqualify(tListC *lista, char *projectName) {
              .projectList); // deleteAtPositionP ya actualiza la lista, no hace
                             // falta actualizarla después
 
-    printf("Committee %s \nproject %s disqualified\n",
+    printf("%sCommittee %s \nproject %s disqualified\n", (i == 0) ? "" : "\n",
            lista->data[resultado.InfoComite].committeeName, projectName);
   }
 }
@@ -164,15 +174,51 @@ void Remove(tListC *lista) {
       deleteAtPositionC(i, lista);
       printf("* Remove: committee %s\n", lista->data[i].committeeName);
       removed = true;
-
     }
   }
-  if(!removed) {
+  if (!removed) {
     printf("+ Error: Remove not possible\n");
   }
 }
+/*
+funcion:mostrar los datos de la votacion general
+parametros:lista de comites
+*/
+void Stats(tListC *lista) {
+  if (isEmptyListC(*lista)) {
+    printf("+ Error: Stats not possible\n");
+    return;
+  }
 
-void Stats() {}
+  for (int i = 0; i <= lastC(*lista); i++) {
+    tItemC comite = lista->data[i];
+    printf("%sCommittee %s \n", (i == 0) ? "" : "\n", comite.committeeName);
+    if (isEmptyListP(comite.projectList)) {
+      printf("No projects\n Nullvotes %d\nParticipation: %d votes from %d "
+             "evaluators (%.2f%%)\n",
+             comite.nullVotes, comite.validVotes, comite.totalEvaluators,
+             (comite.totalEvaluators > 0)
+                 ? (comite.validVotes * 100.0 / comite.totalEvaluators)
+                 : 0);
+      continue;
+    }
+    tPosP proyecto = firstP(comite.projectList);
+    tPosP ultimo = lastP(comite.projectList);
+    do {
+      printf("Project %s category %s numvotes %d (%d%%)\n",
+             proyecto->data.projectName,
+             (proyecto->data.projectEco) ? "eco" : "non-eco",
+             proyecto->data.numVotes,
+             (comite.validVotes > 0)
+                 ? (proyecto->data.numVotes * 100 / comite.validVotes)
+                 : 0);
+
+      if (!strcmp(proyecto->data.projectName, ultimo->data.projectName))
+        proyecto = nextP(proyecto, comite.projectList);
+
+    } while (!strcmp(proyecto->data.projectName, ultimo->data.projectName));
+  }
+}
 void Winners() {}
 
 void processCommand(char *commandNumber, char command, char *param1,
@@ -192,7 +238,7 @@ void processCommand(char *commandNumber, char command, char *param1,
     break;
   case 'S':
     printf("%s %c\n", commandNumber, command);
-    Stats(); // TODO
+    Stats(listCommittees);
     break;
   case 'V':
     printf("%s %c: committee/project %s totalevaluators %s\n", commandNumber,
