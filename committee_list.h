@@ -43,7 +43,7 @@ tPosC nextC(
 tPosC previousC(
     tPosC indice,
     tListC L); // devolver anterior indice ocupado; recibe indice y lista
-bool insertItemC(tItemC data, tPosC indice,
+bool insertItemC(tItemC data,
                  tListC *L); // añadir elemento;recibe info insertar, indice
                              // donde se cambia, lista usar
 void deleteAtPositionC(tPosC indice,

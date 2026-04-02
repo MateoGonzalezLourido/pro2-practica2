@@ -56,25 +56,29 @@ tPosP previousP(const tPosP p, const tListP L) {
 
 bool insertItemP(const tItemP data, tListP *L) {
   tPosP newNode = malloc(sizeof(*newNode));
-  if (newNode == NULL)
-    return false; // falló el malloc
+  if (newNode == NULL) return false;
 
-  // dar datos
   newNode->data = data;
   newNode->next = NULLP;
 
-  // añadir al final
-  tPosP ultimo = lastP(*L);
-  ultimo->next = newNode;
-  return true;
+  // Caso 1: lista vacía, o el nuevo nodo va antes que el primero
+  if (*L == NULLP || strcmp(data.projectName, (*L)->data.projectName) < 0) {
+    newNode->next = *L;
+    *L = newNode;
+    return true;
+  }
 
-  // enlazar nuevo nodo
-  tPosP prev = previousP(ultimo, *L);
-  newNode->next = prev->next; // puede ser null
+  // Caso 2: buscar posición correcta
+  tPosP prev = *L;
+  while (prev->next != NULLP && strcmp(prev->next->data.projectName, data.projectName) < 0)
+    prev = prev->next;
+
+
+  newNode->next = prev->next;
   prev->next = newNode;
-
   return true;
 }
+
 tItemP getItemP(tPosP pos, tListP L) {
   (void)L;
   return pos->data;

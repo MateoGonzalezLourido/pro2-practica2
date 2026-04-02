@@ -36,7 +36,6 @@ tProyectoInfo Obtener_Indice_Lista_Proyecto(tListC *lista, char *comitteeName,
     resultado.InfoProyecto = NULLP;
     return resultado;
   }
-  // TODO: REVISAR SI NECESITA PRECONDICION DE LISTA NO VACIA,
 
   resultado.InfoProyecto =
       findItemP(projectName, lista->data[resultado.InfoComite].projectList);
@@ -64,7 +63,7 @@ void Create(tListC *lista, char *comitteeName, char *totalEvaluators) {
   item.validVotes = 0;
   item.nullVotes = 0;
   createEmptyListP(&item.projectList);
-  insertItemC(item, lastC(*lista) + 1, lista);
+  insertItemC(item, lista);
   printf("* Create: committee %s totalevaluators %d\n", item.committeeName,
          item.totalEvaluators);
 }
@@ -213,10 +212,10 @@ void Stats(tListC *lista) {
                  ? (proyecto->data.numVotes * 100 / comite.validVotes)
                  : 0);
 
-      if (!strcmp(proyecto->data.projectName, ultimo->data.projectName))
+      if (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0)
         proyecto = nextP(proyecto, comite.projectList);
 
-    } while (!strcmp(proyecto->data.projectName, ultimo->data.projectName));
+    } while (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0);
   }
 }
 /*
@@ -253,10 +252,10 @@ void Winners(tListC *lista) {
         }
       }
 
-      if (!strcmp(proyecto->data.projectName, ultimo->data.projectName))
+      if (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0)
         proyecto = nextP(proyecto, comite.projectList);
 
-    } while (!strcmp(proyecto->data.projectName, ultimo->data.projectName));
+    } while (strcmp(proyecto->data.projectName, ultimo->data.projectName)!=0);
 
     // por si fallase algo
     if (proyecto == NULLP || ganadorEco == NULLP || ganadorNonEco == NULLP) {
