@@ -1,10 +1,10 @@
 /*
  * TITLE: PROGRAMMING II LABS
  * SUBTITLE: Practical 2
- * AUTHOR 1: ***************************** LOGIN 1: **********
- * AUTHOR 2: ***************************** LOGIN 2: **********
- * GROUP: *.*
- * DATE: ** / ** / **
+ * AUTHOR 1: gonzález lourido, mateo LOGIN 1: m.glourido
+ * AUTHOR 2: muradas santa maría, pablo LOGIN 2: pablo.muradas
+ * GROUP: 3.3
+ * DATE: 10/04/2026
  */
 
 #include "types.h"
