@@ -63,7 +63,7 @@ void Create(tListC *lista, char *comitteeName, char *totalEvaluators) {
   item.nullVotes = 0;
   createEmptyListP(&item.projectList);
   insertItemC(item, lista);
-  printf("* Create: committee %s totalEvaluators %d\n", item.committeeName,
+  printf("* Create: committee %s totalevaluators %d\n", item.committeeName,
          item.totalEvaluators);
 }
 
