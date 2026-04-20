@@ -110,7 +110,6 @@ void vote(tListC *lista, char *comitteeName, char *projectName) {
            "NULLVOTE\n",
            projectName, comitteeName);
     lista->data[resultado.InfoComite].nullVotes++;
-    lista->data[resultado.InfoComite].validVotes++;
     return;
   }
 
