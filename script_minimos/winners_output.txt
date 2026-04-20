@@ -118,7 +118,7 @@ No projects
 Nullvotes 0
 Participation: 0 votes from 10 evaluators (0.00%)
 ********************
-17 W
+17 W:
 Committee committee1 
 Category eco: Project project2 numvotes 1
 Category non-eco: Project project3 numvotes 1

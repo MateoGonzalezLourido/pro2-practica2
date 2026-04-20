@@ -82,15 +82,19 @@ Nullvotes 0
 Participation: 0 votes from 10 evaluators (0.00%)
 ********************
 13 D: project project1
+Committee committee1
+Project project1 disqualified
+
+Committee committee2
+Project project1 disqualified
 ********************
 14 S:
 Committee committee1
-Project project1 category eco numvotes 1 (100.00%)
 Project project2 category eco numvotes 0 (0.00%)
-Nullvotes 0
+Nullvotes 1
 Participation: 1 votes from 10 evaluators (10.00%)
 
 Committee committee2
-Project project1 category eco numvotes 0 (0.00%)
+No projects
 Nullvotes 0
 Participation: 0 votes from 10 evaluators (0.00%)

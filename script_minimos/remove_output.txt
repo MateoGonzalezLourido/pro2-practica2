@@ -117,15 +117,11 @@ Project project1 category eco numvotes 1 (100.00%)
 Nullvotes 0
 Participation: 1 votes from 10 evaluators (10.00%)
 ********************
-15 R
+15 R:
+* Remove: committee committee1
 * Remove: committee committee2
 ********************
 16 S:
-Committee committee2
-Project project1 category eco numvotes 0 (0.00%)
-Nullvotes 0
-Participation: 0 votes from 10 evaluators (0.00%)
-
 Committee committee3
 Project project1 category eco numvotes 1 (100.00%)
 Nullvotes 0

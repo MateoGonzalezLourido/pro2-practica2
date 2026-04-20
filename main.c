@@ -132,31 +132,22 @@ void Disqualify(tListC *lista, char *projectName) {
     printf("+ Error: Disqualify not possible\n");
     return;
   }
+  bool first = true;
   for (int i = 0; i <= lastC(*lista); i++) {
     tProyectoInfo resultado = Obtener_Indice_Lista_Proyecto(
         lista, lista->data[i].committeeName, projectName);
-    if (resultado.InfoProyecto != NULLP)
-      break;
 
-    if (resultado.InfoComite == NULLC || resultado.InfoProyecto == NULLP) {
-      printf("%sCommittee %s \nNo project \n%s disqualified\n",
-             (i == 0) ? "" : "\n",
-             lista->data[resultado.InfoComite].committeeName, projectName);
-      return;
+    printf("%sCommittee %s\n", first ? "" : "\n", lista->data[i].committeeName);
+    first = false;
+
+    if (resultado.InfoProyecto == NULLP) {
+      printf("No project\n%s disqualified\n", projectName);
+      continue;
     }
-
-    lista->data[resultado.InfoComite].validVotes -=
-        resultado.InfoProyecto->data.numVotes;
-    lista->data[resultado.InfoComite].nullVotes +=
-        resultado.InfoProyecto->data.numVotes;
-    deleteAtPositionP(
-        resultado.InfoProyecto,
-        &lista->data[resultado.InfoComite]
-             .projectList); // deleteAtPositionP ya actualiza la lista, no hace
-                            // falta actualizarla después
-
-    printf("%sCommittee %s \nproject %s disqualified\n", (i == 0) ? "" : "\n",
-           lista->data[resultado.InfoComite].committeeName, projectName);
+    lista->data[i].nullVotes += resultado.InfoProyecto->data.numVotes;
+    lista->data[i].validVotes -= resultado.InfoProyecto->data.numVotes;
+    deleteAtPositionP(resultado.InfoProyecto, &lista->data[i].projectList);
+    printf("Project %s disqualified\n", projectName);
   }
 }
 
@@ -165,13 +156,15 @@ void Remove(tListC *lista) {
     printf("+ Error: Remove not possible\n");
     return;
   }
-  const tPosC comites = lastC(*lista);
   bool removed = false;
-  for (int i = 0; i <= comites; i++) {
+  for (int i = 0; i <= lastC(*lista); i++) {
     if (lista->data[i].validVotes == 0) {
+      char name[NAME_LENGTH_LIMIT];
+      strcpy(name, lista->data[i].committeeName);
       deleteAtPositionC(i, lista);
-      printf("* Remove: committee %s\n", lista->data[i].committeeName);
+      printf("* Remove: committee %s\n", name);
       removed = true;
+      i--; // compensar el desplazamiento
     }
   }
   if (!removed) {
@@ -195,9 +188,11 @@ void Stats(tListC *lista) {
     if (isEmptyListP(comite.projectList)) {
       printf("No projects\nNullvotes %d\nParticipation: %d votes from %d "
              "evaluators (%.2f%%)\n%s",
-             comite.nullVotes, comite.validVotes, comite.totalEvaluators,
+             comite.nullVotes, comite.validVotes + comite.nullVotes,
+             comite.totalEvaluators,
              (comite.totalEvaluators > 0)
-                 ? (comite.validVotes * 100.0 / comite.totalEvaluators)
+                 ? ((comite.validVotes + comite.nullVotes) * 100.0 /
+                    comite.totalEvaluators)
                  : 0.0,
              isLast ? "" : "\n");
       continue;
@@ -215,10 +210,11 @@ void Stats(tListC *lista) {
     }
     printf(
         "Nullvotes %d\nParticipation: %d votes from %d evaluators (%.2f%%)\n%s",
-        comite.nullVotes, comite.validVotes, comite.totalEvaluators,
-        (comite.totalEvaluators > 0)
-            ? (comite.validVotes * 100.0 / comite.totalEvaluators)
-            : 0.0,
+        comite.nullVotes, comite.validVotes + comite.nullVotes,
+        comite.totalEvaluators,
+        (comite.totalEvaluators > 0) ? ((comite.validVotes + comite.nullVotes) *
+                                        100.0 / comite.totalEvaluators)
+                                     : 0.0,
         isLast ? "" : "\n");
   }
 }
@@ -305,11 +301,11 @@ void processCommand(char *commandNumber, char command, char *param1,
     Disqualify(listCommittees, param1);
     break;
   case 'R':
-    printf("%s %c\n", commandNumber, command);
+    printf("%s %c:\n", commandNumber, command);
     Remove(listCommittees);
     break;
   case 'W':
-    printf("%s %c\n", commandNumber, command);
+    printf("%s %c:\n", commandNumber, command);
     Winners(listCommittees);
     break;
   default:
