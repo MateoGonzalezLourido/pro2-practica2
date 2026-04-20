@@ -106,17 +106,17 @@ void vote(tListC *lista, char *comitteeName, char *projectName) {
     return;
   }
   if (resultado.InfoProyecto == NULLP) {
-    printf("+ Error: Vote not possible. Project %s not found in committee %s\n",
+    printf("+ Error: Vote not possible. Project %s not found in committee %s. "
+           "NULLVOTE\n",
            projectName, comitteeName);
     lista->data[resultado.InfoComite].nullVotes++;
+    lista->data[resultado.InfoComite].validVotes++;
     return;
   }
 
   // actualizar votos
   resultado.InfoProyecto->data.numVotes++;
   lista->data[resultado.InfoComite].validVotes++;
-  updateItemP(resultado.InfoProyecto->data, resultado.InfoProyecto,
-              &lista->data[resultado.InfoComite].projectList);
 
   printf("* Vote: committee %s project %s category %s numvotes %d\n",
          comitteeName, projectName,
@@ -187,17 +187,19 @@ void Stats(tListC *lista) {
     printf("+ Error: Stats not possible\n");
     return;
   }
-
   for (int i = 0; i <= lastC(*lista); i++) {
     tItemC comite = lista->data[i];
+    bool isLast = (i == lastC(*lista));
+
     printf("Committee %s\n", comite.committeeName);
     if (isEmptyListP(comite.projectList)) {
       printf("No projects\nNullvotes %d\nParticipation: %d votes from %d "
-             "evaluators (%.2f%%)\n\n",
+             "evaluators (%.2f%%)\n%s",
              comite.nullVotes, comite.validVotes, comite.totalEvaluators,
              (comite.totalEvaluators > 0)
                  ? (comite.validVotes * 100.0 / comite.totalEvaluators)
-                 : 0.0);
+                 : 0.0,
+             isLast ? "" : "\n");
       continue;
     }
     tPosP proyecto = firstP(comite.projectList);
@@ -211,11 +213,13 @@ void Stats(tListC *lista) {
                  : 0.0);
       proyecto = nextP(proyecto, comite.projectList);
     }
-    printf("Nullvotes %d\nParticipation: %d votes from %d voters (%.2f%%)\n\n",
-           comite.nullVotes, comite.validVotes, comite.totalEvaluators,
-           (comite.totalEvaluators > 0)
-               ? (comite.validVotes * 100.0 / comite.totalEvaluators)
-               : 0.0);
+    printf(
+        "Nullvotes %d\nParticipation: %d votes from %d evaluators (%.2f%%)\n%s",
+        comite.nullVotes, comite.validVotes, comite.totalEvaluators,
+        (comite.totalEvaluators > 0)
+            ? (comite.validVotes * 100.0 / comite.totalEvaluators)
+            : 0.0,
+        isLast ? "" : "\n");
   }
 }
 /*
@@ -292,12 +296,12 @@ void processCommand(char *commandNumber, char command, char *param1,
     Stats(listCommittees);
     break;
   case 'V':
-    printf("%s %c: committee %s totalevaluators %s\n", commandNumber, command,
-           param1, param2);
+    printf("%s %c: committee %s project %s\n", commandNumber, command, param1,
+           param2);
     vote(listCommittees, param1, param2);
     break;
   case 'D':
-    printf("%s %c: committee %s\n", commandNumber, command, param1);
+    printf("%s %c: project %s\n", commandNumber, command, param1);
     Disqualify(listCommittees, param1);
     break;
   case 'R':

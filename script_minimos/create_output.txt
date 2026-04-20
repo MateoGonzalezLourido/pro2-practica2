@@ -7,7 +7,6 @@ Committee committee2
 No projects
 Nullvotes 0
 Participation: 0 votes from 10 evaluators (0.00%)
-
 ********************
 03 C: committee committee1 totalevaluators 10
 * Create: committee committee1 totalevaluators 10
@@ -22,7 +21,6 @@ Committee committee2
 No projects
 Nullvotes 0
 Participation: 0 votes from 10 evaluators (0.00%)
-
 ********************
 05 C: committee committee4 totalevaluators 10
 * Create: committee committee4 totalevaluators 10
@@ -42,7 +40,6 @@ Committee committee4
 No projects
 Nullvotes 0
 Participation: 0 votes from 10 evaluators (0.00%)
-
 ********************
 07 C: committee committee3 totalevaluators 10
 * Create: committee committee3 totalevaluators 10
@@ -67,4 +64,3 @@ Committee committee4
 No projects
 Nullvotes 0
 Participation: 0 votes from 10 evaluators (0.00%)
-
