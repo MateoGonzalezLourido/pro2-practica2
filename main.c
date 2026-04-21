@@ -26,19 +26,14 @@ tProyectoInfo Obtener_Indice_Lista_Proyecto(tListC *lista, char *comitteeName,
                                             char *projectName) {
   tProyectoInfo resultado;
 
-  if (isEmptyListC(*lista)) {
-    resultado.InfoComite = NULLC;
-    resultado.InfoProyecto = NULLP;
-    return resultado;
-  }
   resultado.InfoComite = findItemC(comitteeName, *lista);
   if (resultado.InfoComite == NULLC) {
     resultado.InfoProyecto = NULLP;
     return resultado;
   }
 
-  resultado.InfoProyecto =
-      findItemP(projectName, lista->data[resultado.InfoComite].projectList);
+  tItemC item = getItemC(resultado.InfoComite, *lista);
+  resultado.InfoProyecto = findItemP(projectName, item.projectList);
 
   return resultado;
 }
@@ -86,10 +81,12 @@ void New(tListC *lista, char *comitteeName, char *projectName, char *category) {
   item.numVotes = 0;
 
   // insertar al final
-  if (!insertItemP(item, &lista->data[resultado.InfoComite].projectList)) {
+  tItemC comite = getItemC(resultado.InfoComite, *lista);
+  if (!insertItemP(item, &comite.projectList)) {
     printf("+ Error: New not possible\n");
     return;
   }
+  updateItemC(comite, resultado.InfoComite, lista);
 
   printf("* New: committee %s project %s category %s\n", comitteeName,
          projectName, item.projectEco ? "eco" : "non-eco");
@@ -114,13 +111,19 @@ void vote(tListC *lista, char *comitteeName, char *projectName) {
   }
 
   // actualizar votos
-  resultado.InfoProyecto->data.numVotes++;
-  lista->data[resultado.InfoComite].validVotes++;
+  tItemC comite = getItemC(resultado.InfoComite, *lista);
+  tItemP proyecto = getItemP(resultado.InfoProyecto, comite.projectList);
+
+  proyecto.numVotes++;
+  updateItemP(proyecto, resultado.InfoProyecto, &comite.projectList);
+
+  comite.validVotes++;
+  updateItemC(comite, resultado.InfoComite, lista);
 
   printf("* Vote: committee %s project %s category %s numvotes %d\n",
-         comitteeName, projectName,
-         (resultado.InfoProyecto->data.projectEco) ? "eco" : "non-eco",
-         resultado.InfoProyecto->data.numVotes);
+          comitteeName, projectName,
+          (proyecto.projectEco) ? "eco" : "non-eco",
+          proyecto.numVotes);
 }
 /*
     funcion:descalificar/borrar un proyecto
@@ -132,20 +135,22 @@ void Disqualify(tListC *lista, char *projectName) {
     return;
   }
   bool first = true;
-  for (int i = 0; i <= lastC(*lista); i++) {
-    tProyectoInfo resultado = Obtener_Indice_Lista_Proyecto(
-        lista, lista->data[i].committeeName, projectName);
+  for (tPosC pC = firstC(*lista); pC != NULLC; pC = nextC(pC, *lista)) {
+    tItemC comite = getItemC(pC, *lista);
+    tPosP pP = findItemP(projectName, comite.projectList);
 
-    printf("%sCommittee %s\n", first ? "" : "\n", lista->data[i].committeeName);
+    printf("%sCommittee %s\n", first ? "" : "\n", comite.committeeName);
     first = false;
 
-    if (resultado.InfoProyecto == NULLP) {
+    if (pP == NULLP) {
       printf("No project\n%s disqualified\n", projectName);
       continue;
     }
-    lista->data[i].nullVotes += resultado.InfoProyecto->data.numVotes;
-    lista->data[i].validVotes -= resultado.InfoProyecto->data.numVotes;
-    deleteAtPositionP(resultado.InfoProyecto, &lista->data[i].projectList);
+    tItemP proyecto = getItemP(pP, comite.projectList);
+    comite.nullVotes += proyecto.numVotes;
+    comite.validVotes -= proyecto.numVotes;
+    deleteAtPositionP(pP, &comite.projectList);
+    updateItemC(comite, pC, lista);
     printf("Project %s disqualified\n", projectName);
   }
 }
@@ -156,14 +161,17 @@ void Remove(tListC *lista) {
     return;
   }
   bool removed = false;
-  for (int i = 0; i <= lastC(*lista); i++) {
-    if (lista->data[i].validVotes == 0) {
-      char name[NAME_LENGTH_LIMIT];
-      strcpy(name, lista->data[i].committeeName);
-      deleteAtPositionC(i, lista);
-      printf("* Remove: committee %s\n", name);
+  tPosC pC = firstC(*lista);
+  while (pC != NULLC) {
+    tItemC comite = getItemC(pC, *lista);
+    if (comite.validVotes == 0) {
+      printf("* Remove: committee %s\n", comite.committeeName);
+      deleteAtPositionC(pC, lista);
       removed = true;
-      i--; // compensar el desplazamiento
+      // Al borrar en una lista con arrays, la posición actual pC pasa a apuntar al siguiente elemento
+      // No incrementamos pC.
+    } else {
+      pC = nextC(pC, *lista);
     }
   }
   if (!removed) {
@@ -179,9 +187,9 @@ void Stats(tListC *lista) {
     printf("+ Error: Stats not possible\n");
     return;
   }
-  for (int i = 0; i <= lastC(*lista); i++) {
-    tItemC comite = lista->data[i];
-    bool isLast = (i == lastC(*lista));
+  for (tPosC pC = firstC(*lista); pC != NULLC; pC = nextC(pC, *lista)) {
+    tItemC comite = getItemC(pC, *lista);
+    bool isLast = (nextC(pC, *lista) == NULLC);
 
     printf("Committee %s\n", comite.committeeName);
     if (isEmptyListP(comite.projectList)) {
@@ -196,17 +204,18 @@ void Stats(tListC *lista) {
              isLast ? "" : "\n");
       continue;
     }
-    tPosP proyecto = firstP(comite.projectList);
-    while (proyecto != NULLP) {
+
+    for (tPosP pP = firstP(comite.projectList); pP != NULLP; pP = nextP(pP, comite.projectList)) {
+      tItemP proyecto = getItemP(pP, comite.projectList);
       printf("Project %s category %s numvotes %d (%.2f%%)\n",
-             proyecto->data.projectName,
-             proyecto->data.projectEco ? "eco" : "non-eco",
-             proyecto->data.numVotes,
+             proyecto.projectName,
+             proyecto.projectEco ? "eco" : "non-eco",
+             proyecto.numVotes,
              (comite.validVotes > 0)
-                 ? (proyecto->data.numVotes * 100.0 / comite.validVotes)
+                 ? (proyecto.numVotes * 100.0 / comite.validVotes)
                  : 0.0);
-      proyecto = nextP(proyecto, comite.projectList);
     }
+
     printf(
         "Nullvotes %d\nParticipation: %d votes from %d evaluators (%.2f%%)\n%s",
         comite.nullVotes, comite.validVotes + comite.nullVotes,
@@ -226,48 +235,49 @@ void Winners(tListC *lista) {
     printf("+ Error: Winners not possible\n");
     return;
   }
-  for (int i = 0; i <= lastC(*lista); i++) {
-    tItemC comite = lista->data[i];
+  for (tPosC pC = firstC(*lista); pC != NULLC; pC = nextC(pC, *lista)) {
+    tItemC comite = getItemC(pC, *lista);
+    printf("%sCommittee %s \n", (pC == firstC(*lista)) ? "" : "\n", comite.committeeName);
+
     if (isEmptyListP(comite.projectList) || comite.validVotes == 0) {
-      printf("%sCommittee %s \n", (i == 0) ? "" : "\n", comite.committeeName);
       printf("Category eco: No winner\n");
       printf("Category non-eco: No winner\n");
       continue;
     }
-    tPosP proyecto = firstP(comite.projectList);
-    tPosP ultimo = lastP(comite.projectList);
-    tPosP ganadorEco = NULL;
-    tPosP ganadorNonEco = NULL;
-    do {
-      if (proyecto->data.projectEco) {
-        if (ganadorEco == NULL ||
-            proyecto->data.numVotes > ganadorEco->data.numVotes) {
-          ganadorEco = proyecto;
+
+    tPosP ganadorEco = NULLP;
+    tPosP ganadorNonEco = NULLP;
+    tNumVotes maxVotesEco = -1;
+    tNumVotes maxVotesNonEco = -1;
+
+    for (tPosP pP = firstP(comite.projectList); pP != NULLP; pP = nextP(pP, comite.projectList)) {
+      tItemP itemP = getItemP(pP, comite.projectList);
+      if (itemP.projectEco) {
+        if (itemP.numVotes > maxVotesEco) {
+          maxVotesEco = itemP.numVotes;
+          ganadorEco = pP;
         }
       } else {
-        if (ganadorNonEco == NULL ||
-            proyecto->data.numVotes > ganadorNonEco->data.numVotes) {
-          ganadorNonEco = proyecto;
+        if (itemP.numVotes > maxVotesNonEco) {
+          maxVotesNonEco = itemP.numVotes;
+          ganadorNonEco = pP;
         }
       }
-
-      if (strcmp(proyecto->data.projectName, ultimo->data.projectName) != 0)
-        proyecto = nextP(proyecto, comite.projectList);
-
-    } while (strcmp(proyecto->data.projectName, ultimo->data.projectName) != 0);
-
-    // por si fallase algo
-    if (proyecto == NULLP || ganadorEco == NULLP || ganadorNonEco == NULLP) {
-      printf("+ Error: Winners not possible\n");
-      continue;
     }
 
-    printf("%sCommittee %s \n", (i == 0) ? "" : "\n", comite.committeeName);
-    printf("Category eco: Project %s numvotes %d\n",
-           ganadorEco->data.projectName, ganadorEco->data.numVotes);
-    printf("Category non-eco: Project %s numvotes %d\n",
-           ganadorNonEco ? ganadorNonEco->data.projectName : "No winner",
-           ganadorNonEco ? ganadorNonEco->data.numVotes : 0);
+    if (ganadorEco != NULLP) {
+      tItemP itemG = getItemP(ganadorEco, comite.projectList);
+      printf("Category eco: Project %s numvotes %d\n", itemG.projectName, itemG.numVotes);
+    } else {
+      printf("Category eco: No winner\n");
+    }
+
+    if (ganadorNonEco != NULLP) {
+      tItemP itemG = getItemP(ganadorNonEco, comite.projectList);
+      printf("Category non-eco: Project %s numvotes %d\n", itemG.projectName, itemG.numVotes);
+    } else {
+      printf("Category non-eco: No winner\n");
+    }
   }
 }
 
